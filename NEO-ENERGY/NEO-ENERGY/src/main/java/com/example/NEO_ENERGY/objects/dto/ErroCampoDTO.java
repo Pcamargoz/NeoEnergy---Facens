@@ -1,4 +1,6 @@
 package com.example.NEO_ENERGY.objects.dto;
 
-public class ErroCampoDTO {
+import java.util.List;
+
+public record ErroCampoDTO(int status, String message, List<ErroCampoDTO> erros) {
 }

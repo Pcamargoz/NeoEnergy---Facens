@@ -1,4 +1,4 @@
 package com.example.NEO_ENERGY.objects.dto;
 
-public class UsuarioDTO {
+public record UsuarioDTO() {
 }
