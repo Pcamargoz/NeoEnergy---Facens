@@ -5,6 +5,7 @@ import com.example.NEO_ENERGY.objects.model.STATUS_OBJETOS;
 import com.example.NEO_ENERGY.service.PsolarService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -20,17 +21,20 @@ public class PsolarController {
     private final PsolarService service;
 
     @PostMapping
+    @PreAuthorize("permitAll()")
     public ResponseEntity<PsolarEntity> criar(@RequestBody PsolarEntity psolar) {
         PsolarEntity salvo = service.salvar(psolar);
         return ResponseEntity.created(URI.create("/painel_solar/" + salvo.getId())).body(salvo);
     }
 
     @GetMapping
+    @PreAuthorize("permitAll()")
     public ResponseEntity<List<PsolarEntity>> listar() {
         return ResponseEntity.ok(service.listarTodos());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<PsolarEntity> obterPorId(@PathVariable UUID id) {
         return service.obterPorId(id)
                 .map(ResponseEntity::ok)
@@ -38,6 +42,7 @@ public class PsolarController {
     }
 
     @GetMapping("/pesquisar")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<List<PsolarEntity>> pesquisar(
             @RequestParam(required = false) STATUS_OBJETOS status,
             @RequestParam(required = false) BigDecimal energiaMin,
@@ -46,17 +51,20 @@ public class PsolarController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<PsolarEntity> atualizar(@PathVariable UUID id, @RequestBody PsolarEntity psolar) {
         psolar.setId(id);
         return ResponseEntity.ok(service.atualizar(psolar));
     }
 
     @PatchMapping("/{id}/status")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<PsolarEntity> atualizarStatus(@PathVariable UUID id, @RequestParam STATUS_OBJETOS status) {
         return ResponseEntity.ok(service.atualizarStatus(id, status));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Void> deletar(@PathVariable UUID id) {
         service.deletar(id);
         return ResponseEntity.noContent().build();

@@ -25,10 +25,9 @@ public class UsuarioService {
     private final PasswordEncoder encoder;
 
     // tambem pedindo para que o usuario escolha o plano dele
-    public UsuarioEntity salvar(UsuarioEntity usuario,RoleEnum role_plano) {
+    public UsuarioEntity salvar(UsuarioEntity usuario) {
         validator.validarParaCriar(usuario);
         usuario.setSenha(encoder.encode(usuario.getSenha()));
-        usuario.setRole(role_plano);
         return repository.save(usuario);
     }
 
