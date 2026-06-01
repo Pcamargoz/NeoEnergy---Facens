@@ -1,6 +1,7 @@
 package com.example.NEO_ENERGY.service;
 
 import com.example.NEO_ENERGY.exception.RecursoNaoEncontradoException;
+import com.example.NEO_ENERGY.objects.dto.CasaDTO;
 import com.example.NEO_ENERGY.objects.model.CasaEntity;
 import com.example.NEO_ENERGY.objects.repository.CasaRepository;
 import com.example.NEO_ENERGY.objects.repository.spec.CasaSpec;
@@ -21,6 +22,17 @@ public class CasaService {
 
     public CasaEntity salvar(CasaEntity casa) {
         return repository.save(casa);
+    }
+
+    // Cria uma casa vazia (CasaDTO não tem campos escalares próprios por enquanto).
+    public CasaEntity criarDeDTO(CasaDTO dto) {
+        return repository.save(new CasaEntity());
+    }
+
+    // Atualizar uma casa sem campos próprios é praticamente um no-op; só valida existência.
+    public CasaEntity atualizarDeDTO(UUID id, CasaDTO dto) {
+        return repository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Casa não encontrada."));
     }
 
     public List<CasaEntity> listarTodos() {

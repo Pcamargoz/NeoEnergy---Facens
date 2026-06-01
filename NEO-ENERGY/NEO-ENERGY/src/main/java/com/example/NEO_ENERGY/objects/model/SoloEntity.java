@@ -22,14 +22,25 @@ public class SoloEntity {
     private UUID id;
 
     @Column
-    private BigDecimal plantacoes;
+    private String nomeDoSolo;
 
+    // vai ser usado para saber se esta com chuva ou não
+    // fazer o metodo para essa variavel aqui
     @Column
     private boolean statusSolo;
 
+    @Enumerated(EnumType.STRING)
     @Column
+    private TiposDoSolo tiposDoSolo;
+
+    // 1 solo tem vários irrigadores. mappedBy aponta pro campo "solo" em IrrigadorEntity (lado dono).
     @OneToMany(mappedBy = "solo", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<IrrigadorEntity> irrigador = new ArrayList<>();
+    private List<IrrigadorEntity> irrigadores = new ArrayList<>();
+
+    // Lado dono do relacionamento com CasaEntity.
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "casa_id", nullable = false)
+    private CasaEntity casa;
 
     @CreatedDate
     @Column(name = "data_cadastro", updatable = false)

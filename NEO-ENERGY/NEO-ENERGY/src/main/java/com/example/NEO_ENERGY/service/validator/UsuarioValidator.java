@@ -15,19 +15,21 @@ public class UsuarioValidator {
     private final UsuarioRepository repository;
 
     public void validarParaCriar(UsuarioEntity usuario) {
-        validarDuplicidade(usuario.getLogin(), usuario.getEmail(), null);
+        validarDuplicidade(usuario.getLogin(), null);
     }
 
-    private void validarDuplicidade(String login, String email, UUID idAtual) {
-        UsuarioEntity usuarioLogin = repository.findByLogin(login);
-        if (usuarioLogin != null && (idAtual == null || !usuarioLogin.getId().equals(idAtual))) {
-            throw new RegistroDuplicado("Já existe usuário com esse login.");
-        }
-
-        UsuarioEntity usuarioEmail = repository.findByEmail(email);
-        if (usuarioEmail != null && (idAtual == null || !usuarioEmail.getId().equals(idAtual))) {
-            throw new RegistroDuplicado("Já existe usuário com esse email.");
-        }
+    public void validarParaAtualizar(UsuarioEntity usuario) {
+        validarDuplicidade(usuario.getLogin(), usuario.getId());
     }
 
+    private void validarDuplicidade(String username, UUID idAtual) {
+        if (username == null || username.isBlank()) {
+            throw new RegistroDuplicado("Username é obrigatório.");
+        }
+
+        UsuarioEntity existente = repository.findByLogin(username);
+        if (existente != null && (idAtual == null || !existente.getId().equals(idAtual))) {
+            throw new RegistroDuplicado("Já existe usuário com esse username.");
+        }
+    }
 }

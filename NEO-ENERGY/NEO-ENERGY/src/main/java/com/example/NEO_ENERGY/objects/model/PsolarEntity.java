@@ -19,10 +19,20 @@ public class PsolarEntity {
     private UUID id;
 
     @Column
-    private BigDecimal energiaPsolar;
+    private String nome;
 
     @Column
+    private BigDecimal energiaPsolar;
+
+    // @Enumerated(STRING) faz o JPA salvar "LIGADO"/"DESLIGADO" em vez de 0/1.
+    @Enumerated(EnumType.STRING)
+    @Column
     private STATUS_OBJETOS Status;
+
+    // Lado dono do relacionamento com CasaEntity. Aqui mora a coluna casa_id no banco.
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "casa_id", nullable = false)
+    private CasaEntity casa;
 
 
     @CreatedDate

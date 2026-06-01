@@ -19,10 +19,20 @@ public class IrrigadorEntity {
     private UUID id;
 
     @Column
+    private String nome;
+
+    @Enumerated(EnumType.STRING)
+    @Column
     private STATUS_OBJETOS status;
 
+    // Vamos usar para acumular o quanto de agua devemos pagar
     @Column
     private BigDecimal agua;
+
+    // Lado dono do relacionamento com SoloEntity (cada irrigador pertence a um solo).
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "solo_id", nullable = false)
+    private SoloEntity solo;
 
     @CreatedDate
     @Column(name = "data_cadastro", updatable = false)
@@ -32,6 +42,9 @@ public class IrrigadorEntity {
     @Column(name = "data_atualizacao")
     private LocalDateTime dataAtualizacao;
 
-
+    // Soma de quantos segundos o irrigador já ficou ligado no total (todos os ciclos).
+    // O instante de quando ligou/desligou agora fica em SessaoIrrigador.
+    @Column
+    private Long tempoTotalLigadoSegundos;
 
 }

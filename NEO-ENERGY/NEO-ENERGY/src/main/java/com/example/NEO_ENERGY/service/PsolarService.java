@@ -1,8 +1,11 @@
 package com.example.NEO_ENERGY.service;
 
 import com.example.NEO_ENERGY.exception.RecursoNaoEncontradoException;
+import com.example.NEO_ENERGY.objects.dto.PsolarDTO;
+import com.example.NEO_ENERGY.objects.model.CasaEntity;
 import com.example.NEO_ENERGY.objects.model.PsolarEntity;
 import com.example.NEO_ENERGY.objects.model.STATUS_OBJETOS;
+import com.example.NEO_ENERGY.objects.repository.CasaRepository;
 import com.example.NEO_ENERGY.objects.repository.PsolarRepository;
 import com.example.NEO_ENERGY.objects.repository.spec.PsolarSpec;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +23,34 @@ import java.util.UUID;
 public class PsolarService {
 
     private final PsolarRepository repository;
+    private final CasaRepository casaRepository;
 
     public PsolarEntity salvar(PsolarEntity psolar) {
         return repository.save(psolar);
+    }
+
+    // Cria a partir do DTO resolvendo a FK casa via casaRepository.
+    public PsolarEntity criarDeDTO(PsolarDTO dto) {
+        CasaEntity casa = casaRepository.findById(dto.casaId())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Casa não encontrada: " + dto.casaId()));
+        PsolarEntity psolar = new PsolarEntity();
+        psolar.setNome(dto.nome());
+        psolar.setEnergiaPsolar(dto.energia());
+        psolar.setStatus(dto.status());
+        psolar.setCasa(casa);
+        return repository.save(psolar);
+    }
+
+    public PsolarEntity atualizarDeDTO(UUID id, PsolarDTO dto) {
+        PsolarEntity existente = repository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Painel solar não encontrado."));
+        CasaEntity casa = casaRepository.findById(dto.casaId())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Casa não encontrada: " + dto.casaId()));
+        existente.setNome(dto.nome());
+        existente.setEnergiaPsolar(dto.energia());
+        existente.setStatus(dto.status());
+        existente.setCasa(casa);
+        return repository.save(existente);
     }
 
     public List<PsolarEntity> listarTodos() {
@@ -40,6 +68,15 @@ public class PsolarService {
     public PsolarEntity atualizar(PsolarEntity psolar) {
         repository.findById(psolar.getId())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Painel solar não encontrado."));
+        return repository.save(psolar);
+    }
+
+    // verificar aqui se ta certo para atualizar somente a energia solar
+    public PsolarEntity atualizarEnergia(PsolarEntity psolar){
+        Optional<PsolarEntity> optionalPsolarEntity = repository.findById(psolar.getId());
+        if(optionalPsolarEntity != null){
+            psolar.setEnergiaPsolar(optionalPsolarEntity.get().getEnergiaPsolar());
+        }
         return repository.save(psolar);
     }
 

@@ -6,6 +6,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -17,13 +19,13 @@ public class CasaEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column
+    // 1 casa pode ter vários painéis. mappedBy aponta pro campo "casa" da PsolarEntity (lado dono).
     @OneToMany(mappedBy = "casa", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private PsolarEntity painelSolar;
+    private List<PsolarEntity> paineisSolares = new ArrayList<>();
 
-    @Column
+    // 1 casa pode ter vários solos.
     @OneToMany(mappedBy = "casa", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private SoloEntity solo;
+    private List<SoloEntity> solos = new ArrayList<>();
 
     @CreatedDate
     @Column(name = "data_cadastro", updatable = false)

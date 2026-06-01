@@ -1,5 +1,10 @@
 package com.example.NEO_ENERGY.handler;
 
+import com.example.NEO_ENERGY.exception.OperacaoNaoPermitidaException;
+import com.example.NEO_ENERGY.exception.RecursoNaoEncontradoException;
+import com.example.NEO_ENERGY.exception.RegistroDuplicado;
+import com.example.NEO_ENERGY.objects.dto.ErroCampoDTO;
+import com.example.NEO_ENERGY.objects.dto.ErroRespostaDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -20,14 +25,14 @@ public class GlobalExceptionHandler {
                 .body(ErroRespostaDTO.conflito(ex.getMessage()));
     }
 
-    @ExceptionHandler(RecursoNaoEncontrado.class)
-    public ResponseEntity<ErroRespostaDTO> handleRecursoNaoEncontrado(RecursoNaoEncontrado ex) {
+    @ExceptionHandler(RecursoNaoEncontradoException.class)
+    public ResponseEntity<ErroRespostaDTO> handleRecursoNaoEncontradoException(RecursoNaoEncontradoException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ErroRespostaDTO(HttpStatus.NOT_FOUND.value(), ex.getMessage(), List.of()));
     }
 
-    @ExceptionHandler(OperacaoNaoPermitida.class)
-    public ResponseEntity<ErroRespostaDTO> handleOperacaoNaoPermitida(OperacaoNaoPermitida ex) {
+    @ExceptionHandler(OperacaoNaoPermitidaException.class)
+    public ResponseEntity<ErroRespostaDTO> handleOperacaoNaoPermitidaException(OperacaoNaoPermitidaException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(new ErroRespostaDTO(HttpStatus.FORBIDDEN.value(), ex.getMessage(), List.of()));
     }

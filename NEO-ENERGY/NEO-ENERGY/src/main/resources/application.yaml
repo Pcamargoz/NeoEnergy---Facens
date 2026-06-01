@@ -29,3 +29,11 @@ spring:
 
 server:
   port: 8080
+
+app:
+  jwt:
+    # base64 de 32+ bytes. Troque por um valor secreto real (use openssl rand -base64 32)
+    secret: Y2hhbmdlLW1lLXBsZWFzZS10aGlzLWlzLWEtZGVmYXVsdC1zZWNyZXQtZm9yLW5lby1lbmVyZ3k=
+    expiration-ms: 86400000   # 24h — duração do access token (JWT)
+    refresh-expiration-ms: 604800000   # 7 dias — duração do refresh token
+    issuer: neo-energy

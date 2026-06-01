@@ -1,54 +1,89 @@
 package com.example.NEO_ENERGY.security;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfiguration {
+
+    private final JwtAuthenticationFilter jwtAuthFilter;
+    private final CustomUserDetailsService userDetailsService;
+    private final PasswordEncoder passwordEncoder;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // CORS habilitado — usa o bean corsConfigurationSource() abaixo.
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // rotas publicas
+                        .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/usuarios").permitAll()
-                        .requestMatchers("/login/**").permitAll()
-                        .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/error").permitAll()
 
-                        // somente ADMIN gerencia usuarios
-                        .requestMatchers("/usuarios/**").hasRole("ADMIN")
-
-                        // CRUD dos objetos: ADMIN ou PRO
-                        .requestMatchers(HttpMethod.POST, "/casa/**", "/irrigador/**", "/painel_solar/**", "/solo/**")
-                            .hasAnyRole("ADMIN", "PRO")
-                        .requestMatchers(HttpMethod.PUT, "/casa/**", "/irrigador/**", "/painel_solar/**", "/solo/**")
-                            .hasAnyRole("ADMIN", "PRO")
-                        .requestMatchers(HttpMethod.PATCH, "/casa/**", "/irrigador/**", "/painel_solar/**", "/solo/**")
-                            .hasAnyRole("ADMIN", "PRO")
-                        .requestMatchers(HttpMethod.DELETE, "/casa/**", "/irrigador/**", "/painel_solar/**", "/solo/**")
-                            .hasRole("ADMIN")
-
-                        // leitura: qualquer usuario autenticado
+                        // resto: respeita os @PreAuthorize dos controllers
                         .anyRequest().authenticated()
                 )
-                .httpBasic(httpBasic -> {})
-                .headers(headers -> headers.frameOptions(frame -> frame.disable()));
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    // Configuração de CORS permissiva para desenvolvimento.
+    // Aceita as origens típicas de Vite (5173), CRA (3000) e o próprio back (8080).
+    // Em produção, restringir setAllowedOrigins ao domínio final do front.
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of(
+                "http://localhost:3000",
+                "http://localhost:5173",
+                "http://localhost:8080",
+                "http://127.0.0.1:3000",
+                "http://127.0.0.1:5173"
+        ));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        // Expõe Authorization e Location pro front conseguir ler (ex.: pegar o id de um recurso criado).
+        config.setExposedHeaders(List.of("Authorization", "Location"));
+        config.setAllowCredentials(true);
+        config.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder);
+        return provider;
     }
 
     @Bean

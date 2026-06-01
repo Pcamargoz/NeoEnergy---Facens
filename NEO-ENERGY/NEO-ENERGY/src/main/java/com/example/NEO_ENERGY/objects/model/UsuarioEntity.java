@@ -37,9 +37,10 @@ public class UsuarioEntity {
     private RoleEnum role = RoleEnum.NORMAL;
 
 
-    @Column
-    // pensar o que ainda podemos implementar aqui
-    @OneToOne
+    // OneToOne: cada usuário tem uma casa. LAZY evita JOIN automático em todo SELECT de usuário.
+    // O @JoinColumn diz qual coluna da tabela usuario guarda a FK pra casa.
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "casa_id")
     private CasaEntity casa;
 
 

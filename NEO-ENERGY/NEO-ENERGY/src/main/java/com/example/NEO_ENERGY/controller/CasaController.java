@@ -1,7 +1,9 @@
 package com.example.NEO_ENERGY.controller;
 
-import com.example.NEO_ENERGY.objects.model.CasaEntity;
+import com.example.NEO_ENERGY.objects.dto.CasaDTO;
+import com.example.NEO_ENERGY.objects.dto.CasaRespostaDTO;
 import com.example.NEO_ENERGY.service.CasaService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,38 +22,44 @@ public class CasaController {
 
     @PostMapping
     @PreAuthorize("permitAll()")
-    public ResponseEntity<CasaEntity> criar(@RequestBody CasaEntity casa) {
-        CasaEntity salva = service.salvar(casa);
-        return ResponseEntity.created(URI.create("/casa/" + salva.getId())).body(salva);
+    public ResponseEntity<CasaRespostaDTO> criar(@RequestBody @Valid CasaDTO dto) {
+        CasaRespostaDTO resposta = CasaRespostaDTO.de(service.criarDeDTO(dto));
+        return ResponseEntity.created(URI.create("/casa/" + resposta.id())).body(resposta);
     }
 
     @GetMapping
     @PreAuthorize("permitAll()")
-    public ResponseEntity<List<CasaEntity>> listar() {
-        return ResponseEntity.ok(service.listarTodos());
+    public ResponseEntity<List<CasaRespostaDTO>> listar() {
+        List<CasaRespostaDTO> casas = service.listarTodos().stream()
+                .map(CasaRespostaDTO::de)
+                .toList();
+        return ResponseEntity.ok(casas);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<CasaEntity> obterPorId(@PathVariable UUID id) {
+    public ResponseEntity<CasaRespostaDTO> obterPorId(@PathVariable UUID id) {
         return service.obterPorId(id)
+                .map(CasaRespostaDTO::de)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/pesquisar")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<List<CasaEntity>> pesquisar(
+    public ResponseEntity<List<CasaRespostaDTO>> pesquisar(
             @RequestParam(required = false) UUID idPainelSolar,
             @RequestParam(required = false) UUID idSolo) {
-        return ResponseEntity.ok(service.pesquisar(idPainelSolar, idSolo));
+        List<CasaRespostaDTO> casas = service.pesquisar(idPainelSolar, idSolo).stream()
+                .map(CasaRespostaDTO::de)
+                .toList();
+        return ResponseEntity.ok(casas);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<CasaEntity> atualizar(@PathVariable UUID id, @RequestBody CasaEntity casa) {
-        casa.setId(id);
-        return ResponseEntity.ok(service.atualizar(casa));
+    public ResponseEntity<CasaRespostaDTO> atualizar(@PathVariable UUID id, @RequestBody @Valid CasaDTO dto) {
+        return ResponseEntity.ok(CasaRespostaDTO.de(service.atualizarDeDTO(id, dto)));
     }
 
     @DeleteMapping("/{id}")

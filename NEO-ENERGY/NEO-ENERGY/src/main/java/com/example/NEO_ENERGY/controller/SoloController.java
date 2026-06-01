@@ -1,7 +1,9 @@
 package com.example.NEO_ENERGY.controller;
 
-import com.example.NEO_ENERGY.objects.model.SoloEntity;
+import com.example.NEO_ENERGY.objects.dto.SoloDTO;
+import com.example.NEO_ENERGY.objects.dto.SoloRespostaDTO;
 import com.example.NEO_ENERGY.service.SoloService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,45 +23,51 @@ public class SoloController {
 
     @PostMapping
     @PreAuthorize("permitAll()")
-    public ResponseEntity<SoloEntity> criar(@RequestBody SoloEntity solo) {
-        SoloEntity salvo = service.salvar(solo);
-        return ResponseEntity.created(URI.create("/solo/" + salvo.getId())).body(salvo);
+    public ResponseEntity<SoloRespostaDTO> criar(@RequestBody @Valid SoloDTO dto) {
+        SoloRespostaDTO resposta = SoloRespostaDTO.de(service.criarDeDTO(dto));
+        return ResponseEntity.created(URI.create("/solo/" + resposta.id())).body(resposta);
     }
 
     @GetMapping
     @PreAuthorize("permitAll()")
-    public ResponseEntity<List<SoloEntity>> listar() {
-        return ResponseEntity.ok(service.listarTodos());
+    public ResponseEntity<List<SoloRespostaDTO>> listar() {
+        List<SoloRespostaDTO> solos = service.listarTodos().stream()
+                .map(SoloRespostaDTO::de)
+                .toList();
+        return ResponseEntity.ok(solos);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<SoloEntity> obterPorId(@PathVariable UUID id) {
+    public ResponseEntity<SoloRespostaDTO> obterPorId(@PathVariable UUID id) {
         return service.obterPorId(id)
+                .map(SoloRespostaDTO::de)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/pesquisar")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<List<SoloEntity>> pesquisar(
+    public ResponseEntity<List<SoloRespostaDTO>> pesquisar(
             @RequestParam(required = false) Boolean statusSolo,
             @RequestParam(required = false) BigDecimal plantacoesMin,
             @RequestParam(required = false) BigDecimal plantacoesMax) {
-        return ResponseEntity.ok(service.pesquisar(statusSolo, plantacoesMin, plantacoesMax));
+        List<SoloRespostaDTO> solos = service.pesquisar(statusSolo, plantacoesMin, plantacoesMax).stream()
+                .map(SoloRespostaDTO::de)
+                .toList();
+        return ResponseEntity.ok(solos);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<SoloEntity> atualizar(@PathVariable UUID id, @RequestBody SoloEntity solo) {
-        solo.setId(id);
-        return ResponseEntity.ok(service.atualizar(solo));
+    public ResponseEntity<SoloRespostaDTO> atualizar(@PathVariable UUID id, @RequestBody @Valid SoloDTO dto) {
+        return ResponseEntity.ok(SoloRespostaDTO.de(service.atualizarDeDTO(id, dto)));
     }
 
     @PatchMapping("/{id}/status")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<SoloEntity> atualizarStatus(@PathVariable UUID id, @RequestParam boolean status) {
-        return ResponseEntity.ok(service.atualizarStatus(id, status));
+    public ResponseEntity<SoloRespostaDTO> atualizarStatus(@PathVariable UUID id, @RequestParam boolean status) {
+        return ResponseEntity.ok(SoloRespostaDTO.de(service.atualizarStatus(id, status)));
     }
 
     @DeleteMapping("/{id}")
