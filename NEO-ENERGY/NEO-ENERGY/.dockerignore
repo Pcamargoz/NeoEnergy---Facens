@@ -1,0 +1,23 @@
+# Build local — a imagem recompila do zero, não precisa do target/
+target/
+
+# IDE e config local
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# Git
+.git/
+.gitignore
+
+# Docs e metadados (não vão pra imagem)
+docs/
+*.md
+HELP.md
+
+# OS
+.DS_Store
+Thumbs.db

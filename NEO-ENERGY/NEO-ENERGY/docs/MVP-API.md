@@ -421,14 +421,18 @@ Todas as exceções tratadas devolvem este JSON:
 ## 8. Observações técnicas
 
 ### 8.1 CORS
-**Configurado para dev.** Origens aceitas:
+Origens liberadas vêm da env var **`APP_CORS_ALLOWED_ORIGINS`** (lista separada por vírgula). Sem a env var, o default cobre dev:
 - `http://localhost:3000` e `http://127.0.0.1:3000` (CRA padrão)
 - `http://localhost:5173` e `http://127.0.0.1:5173` (Vite padrão)
-- `http://localhost:8080` (mesmo origem)
+- `http://localhost:8080` (mesma origem)
+
+**Em produção**, defina `APP_CORS_ALLOWED_ORIGINS` com o domínio do front, ex.:
+```
+APP_CORS_ALLOWED_ORIGINS=https://neo-energy.vercel.app
+```
+Para múltiplos domínios, separe por vírgula: `https://a.com,https://b.com`.
 
 Métodos: `GET, POST, PUT, PATCH, DELETE, OPTIONS`. Headers expostos: `Authorization`, `Location` (útil pra ler o id do recurso recém-criado).
-
-Em produção isso vai mudar — o back vai aceitar só o domínio final do front.
 
 ### 8.2 CSRF
 **Desabilitado.** Não precisa mandar token CSRF.
@@ -452,6 +456,41 @@ Em produção o secret virá de env var. **Rotação do secret invalida todos os
 - PostgreSQL local em `localhost:5432/neoenergy`, user/pass `postgres/postgres`.
 - `ddl-auto: update` → o schema é gerado/atualizado pelo Hibernate.
 - Timestamps usam timezone `America/Sao_Paulo`.
+
+---
+
+## 8.6 Deploy (Docker + Render)
+
+O projeto tem um `Dockerfile` multi-stage na raiz. O Render detecta automaticamente — runtime **Docker**, sem build/start command manual.
+
+### Variáveis de ambiente
+
+**Obrigatórias:**
+| Variável | Exemplo | Nota |
+|---|---|---|
+| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://dpg-xxxx:5432/neodb` | Formato JDBC, não o URI nativo do Render |
+| `SPRING_DATASOURCE_USERNAME` | `neouser` | |
+| `SPRING_DATASOURCE_PASSWORD` | `••••••` | |
+| `APP_JWT_SECRET` | Base64 32+ bytes | `openssl rand -base64 32` |
+| `APP_CORS_ALLOWED_ORIGINS` | `https://seu-front.vercel.app` | Domínio do front em prod |
+
+**Opcionais (têm default):**
+| Variável | Default |
+|---|---|
+| `SPRING_JPA_DDL_AUTO` | `update` |
+| `SPRING_JPA_SHOW_SQL` | `true` (use `false` em prod) |
+| `APP_JWT_EXPIRATION_MS` | `86400000` (24h) |
+| `APP_JWT_REFRESH_EXPIRATION_MS` | `604800000` (7d) |
+| `APP_JWT_ISSUER` | `neo-energy` |
+
+> `PORT` é injetado pelo Render automaticamente — **não** precisa setar.
+
+### Conversão da URL do Postgres do Render
+O Render mostra `postgres://user:pass@host:5432/db`. O JDBC precisa de:
+```
+jdbc:postgresql://host:5432/db
+```
+e `user`/`pass` vão separados nas envs `SPRING_DATASOURCE_USERNAME` / `SPRING_DATASOURCE_PASSWORD`.
 
 ---
 

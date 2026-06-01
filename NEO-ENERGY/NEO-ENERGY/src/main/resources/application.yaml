@@ -3,9 +3,10 @@ spring:
     name: NEO-ENERGY
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/neoenergy
-    username: postgres
-    password: postgres
+    # Valores vêm de variáveis de ambiente. Os defaults (após :) servem só pra rodar local.
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/neoenergy}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
     hikari:
       pool-name: NeoEnergyHikariPool
@@ -18,8 +19,8 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: ${SPRING_JPA_DDL_AUTO:update}
+    show-sql: ${SPRING_JPA_SHOW_SQL:true}
     properties:
       hibernate:
         format_sql: true
@@ -28,12 +29,14 @@ spring:
     open-in-view: false
 
 server:
-  port: 8080
+  # Render injeta a porta na env var PORT. Local cai no default 8080.
+  port: ${PORT:8080}
 
 app:
   jwt:
-    # base64 de 32+ bytes. Troque por um valor secreto real (use openssl rand -base64 32)
-    secret: Y2hhbmdlLW1lLXBsZWFzZS10aGlzLWlzLWEtZGVmYXVsdC1zZWNyZXQtZm9yLW5lby1lbmVyZ3k=
-    expiration-ms: 86400000   # 24h — duração do access token (JWT)
-    refresh-expiration-ms: 604800000   # 7 dias — duração do refresh token
-    issuer: neo-energy
+    # Em produção, defina APP_JWT_SECRET (base64 de 32+ bytes: openssl rand -base64 32).
+    # O default abaixo é só pra desenvolvimento local.
+    secret: ${APP_JWT_SECRET:Y2hhbmdlLW1lLXBsZWFzZS10aGlzLWlzLWEtZGVmYXVsdC1zZWNyZXQtZm9yLW5lby1lbmVyZ3k=}
+    expiration-ms: ${APP_JWT_EXPIRATION_MS:86400000}   # 24h — duração do access token (JWT)
+    refresh-expiration-ms: ${APP_JWT_REFRESH_EXPIRATION_MS:604800000}   # 7 dias — refresh token
+    issuer: ${APP_JWT_ISSUER:neo-energy}

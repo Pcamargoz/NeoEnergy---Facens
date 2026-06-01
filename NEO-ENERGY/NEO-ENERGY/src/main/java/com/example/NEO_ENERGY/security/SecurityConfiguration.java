@@ -1,6 +1,7 @@
 package com.example.NEO_ENERGY.security;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -31,6 +32,12 @@ public class SecurityConfiguration {
     private final CustomUserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
 
+    // Origens liberadas no CORS, separadas por vírgula. Em produção, defina
+    // APP_CORS_ALLOWED_ORIGINS com o domínio do front (ex.: https://neo-energy.vercel.app).
+    // O default cobre os ambientes de desenvolvimento locais.
+    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173,http://localhost:8080,http://127.0.0.1:3000,http://127.0.0.1:5173}")
+    private List<String> allowedOrigins;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -54,19 +61,12 @@ public class SecurityConfiguration {
         return http.build();
     }
 
-    // Configuração de CORS permissiva para desenvolvimento.
-    // Aceita as origens típicas de Vite (5173), CRA (3000) e o próprio back (8080).
-    // Em produção, restringir setAllowedOrigins ao domínio final do front.
+    // Configuração de CORS. As origens vêm da env var APP_CORS_ALLOWED_ORIGINS
+    // (ou do default local). Para liberar o front de produção, basta setar a env var.
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(
-                "http://localhost:3000",
-                "http://localhost:5173",
-                "http://localhost:8080",
-                "http://127.0.0.1:3000",
-                "http://127.0.0.1:5173"
-        ));
+        config.setAllowedOrigins(allowedOrigins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         // Expõe Authorization e Location pro front conseguir ler (ex.: pegar o id de um recurso criado).
