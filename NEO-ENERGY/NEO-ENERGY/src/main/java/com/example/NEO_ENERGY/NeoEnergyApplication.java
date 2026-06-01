@@ -10,27 +10,31 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 public class NeoEnergyApplication {
 
 	public static void main(String[] args) {
-		// DIAGNÓSTICO DE DEPLOY (temporário): roda antes do Spring subir, então sempre aparece no log,
-		// mesmo que a conexão com o banco falhe. Confirma (a) que esta build nova está rodando e
-		// (b) o que o processo Java realmente enxerga das variáveis de ambiente.
+		// DIAGNÓSTICO DE DEPLOY v2: se as variáveis de ambiente não chegarem ao processo,
+		// falha IMEDIATAMENTE com uma mensagem clara (que aparece no topo E no fim do log),
+		// em vez do erro confuso "jdbcUrl is required" do Hikari lá embaixo.
 		String url = System.getenv("SPRING_DATASOURCE_URL");
 		String user = System.getenv("SPRING_DATASOURCE_USERNAME");
 		String pass = System.getenv("SPRING_DATASOURCE_PASSWORD");
-		System.out.println("===== DIAG-DEPLOY v1 =====");
-		System.out.println("[DIAG] SPRING_DATASOURCE_URL  = " + mascarar(url));
-		System.out.println("[DIAG] SPRING_DATASOURCE_USERNAME presente? " + (user != null && !user.isBlank()));
-		System.out.println("[DIAG] SPRING_DATASOURCE_PASSWORD presente? " + (pass != null && !pass.isBlank()));
-		System.out.println("==========================");
+
+		String diag = "\n>>>>> DIAG-DEPLOY v2 <<<<<"
+				+ "\n>>> SPRING_DATASOURCE_URL      = " + (url == null ? "<NULL>" : (url.isBlank() ? "<VAZIA>" : url))
+				+ "\n>>> SPRING_DATASOURCE_USERNAME = " + (user == null ? "<NULL>" : user)
+				+ "\n>>> SPRING_DATASOURCE_PASSWORD = " + (pass == null || pass.isBlank() ? "<NULL/VAZIA>" : "(presente)")
+				+ "\n>>>>>>>>>>>>>>>>>>>>>>>>>>>";
+		System.out.println(diag);
+		System.err.println(diag);
+
+		if (url == null || url.isBlank()) {
+			// Para o app de propósito com mensagem clara: prova que as env vars do Render
+			// NÃO estão chegando ao processo Java (a URL deveria estar aqui e não está).
+			throw new IllegalStateException(
+					"DIAG-DEPLOY: SPRING_DATASOURCE_URL chegou NULA/VAZIA ao processo Java. "
+					+ "As variáveis de ambiente do Render não estão alcançando a aplicação. "
+					+ "Verifique se elas estão no serviço correto e se o deploy foi feito DEPOIS de salvá-las.");
+		}
 
 		SpringApplication.run(NeoEnergyApplication.class, args);
-	}
-
-	// Mostra o host da URL sem expor credenciais; diz claramente se está nula/vazia.
-	private static String mascarar(String url) {
-		if (url == null) return "<NULL - env var não chegou ao processo>";
-		if (url.isBlank()) return "<VAZIA>";
-		int corte = url.indexOf('?');
-		return corte > 0 ? url.substring(0, corte) : url;
 	}
 
 }
