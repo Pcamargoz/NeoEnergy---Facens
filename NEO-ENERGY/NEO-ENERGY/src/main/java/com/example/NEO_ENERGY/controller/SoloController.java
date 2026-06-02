@@ -49,10 +49,8 @@ public class SoloController {
     @GetMapping("/pesquisar")
     @PreAuthorize("permitAll()")
     public ResponseEntity<List<SoloRespostaDTO>> pesquisar(
-            @RequestParam(required = false) Boolean statusSolo,
-            @RequestParam(required = false) BigDecimal plantacoesMin,
-            @RequestParam(required = false) BigDecimal plantacoesMax) {
-        List<SoloRespostaDTO> solos = service.pesquisar(statusSolo, plantacoesMin, plantacoesMax).stream()
+            @RequestParam(required = false) Boolean statusSolo) {
+        List<SoloRespostaDTO> solos = service.pesquisar(statusSolo).stream()
                 .map(SoloRespostaDTO::de)
                 .toList();
         return ResponseEntity.ok(solos);

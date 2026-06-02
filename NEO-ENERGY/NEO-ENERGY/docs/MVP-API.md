@@ -285,7 +285,7 @@ No `@PreAuthorize` os controllers usam `hasRole('ADMIN')` — o Spring prefixa c
 `SoloRespostaDTO`: `{ id, nomeDoSolo, statusSolo, tiposDoSolo, casaId, dataCadastro, dataAtualizacao }`.
 
 Endpoints simétricos aos do painel solar:
-- `POST /solo`, `GET /solo`, `GET /solo/{id}`, `GET /solo/pesquisar` (query `statusSolo?`, `plantacoesMin?`, `plantacoesMax?`), `PUT /solo/{id}`, `PATCH /solo/{id}/status?status=true|false`, `DELETE /solo/{id}`.
+- `POST /solo`, `GET /solo`, `GET /solo/{id}`, `GET /solo/pesquisar` (query `statusSolo?`), `PUT /solo/{id}`, `PATCH /solo/{id}/status?status=true|false`, `DELETE /solo/{id}`.
 
 ### 5.4 Irrigador — `/irrigador` ⭐
 

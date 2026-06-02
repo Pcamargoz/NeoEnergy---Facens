@@ -3,6 +3,7 @@ package com.example.NEO_ENERGY.controller;
 import com.example.NEO_ENERGY.objects.dto.UsuarioDTO;
 import com.example.NEO_ENERGY.objects.dto.UsuarioRespostaDTO;
 import com.example.NEO_ENERGY.objects.model.RoleEnum;
+import com.example.NEO_ENERGY.security.AuthenticatedUserProvider;
 import com.example.NEO_ENERGY.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import java.util.UUID;
 public class UsuarioController {
 
     private final UsuarioService service;
+    private final AuthenticatedUserProvider authenticatedUser;
 
     @PostMapping
     @PreAuthorize("permitAll()")
@@ -58,20 +60,24 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarios);
     }
 
-    // Qualquer usuário autenticado pode atualizar dados. TODO futuro: restringir
-    // pra que cada um só edite o próprio perfil (comparar principal.id == path id).
+    // Atualização de perfil: cada usuário só pode editar a SI MESMO (id do path == id do
+    // autenticado). ADMIN pode editar qualquer um. Sem isso, qualquer autenticado poderia
+    // alterar o perfil de outro usuário passando o id alheio na URL.
     @PutMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UsuarioRespostaDTO> atualizar(@PathVariable UUID id, @RequestBody @Valid UsuarioDTO dto) {
+        authenticatedUser.exigirProprioOuAdmin(id);
         return ResponseEntity.ok(UsuarioRespostaDTO.de(service.atualizarDeDTO(id, dto)));
     }
 
     // Troca de plano: o próprio usuário (autenticado) sobe pra PRO, mediante confirmação.
+    // Restrito ao dono (ou ADMIN) — ninguém pode alterar o plano de outra conta.
     @PatchMapping("/{id}/plano")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UsuarioRespostaDTO> trocarPlano(
             @PathVariable UUID id,
             @RequestParam boolean confirmacao) {
+        authenticatedUser.exigirProprioOuAdmin(id);
         return ResponseEntity.ok(UsuarioRespostaDTO.de(service.atualizarRole(id, confirmacao)));
     }
 

@@ -92,16 +92,10 @@ public class SoloService {
         repository.delete(solo);
     }
 
-    public List<SoloEntity> pesquisar(Boolean statusSolo, BigDecimal plantacoesMin, BigDecimal plantacoesMax) {
+    public List<SoloEntity> pesquisar(Boolean statusSolo) {
         Specification<SoloEntity> spec = Specification.where((PredicateSpecification<SoloEntity>) null);
         if (statusSolo != null) {
             spec = spec.and(SoloSpec.statusSoloEqual(statusSolo));
-        }
-        if (plantacoesMin != null) {
-            spec = spec.and(SoloSpec.plantacoesMaiorIgual(plantacoesMin));
-        }
-        if (plantacoesMax != null) {
-            spec = spec.and(SoloSpec.plantacoesMenorIgual(plantacoesMax));
         }
         return repository.findAll(spec);
     }

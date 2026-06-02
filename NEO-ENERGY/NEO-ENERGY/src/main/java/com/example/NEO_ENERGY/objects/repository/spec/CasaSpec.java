@@ -17,14 +17,20 @@ public class CasaSpec {
                 cb.equal(root.get("id"), id);
     }
 
+    // paineisSolares e solos são coleções (@OneToMany), então filtra-se com JOIN, não com get().
+    // distinct evita casas repetidas quando a coleção tem vários itens.
     public static Specification<CasaEntity> painelSolarIdEqual(UUID idPainelSolar) {
-        return (root, query, cb) ->
-                cb.equal(root.get("painelSolar").get("id"), idPainelSolar);
+        return (root, query, cb) -> {
+            query.distinct(true);
+            return cb.equal(root.join("paineisSolares").get("id"), idPainelSolar);
+        };
     }
 
     public static Specification<CasaEntity> soloIdEqual(UUID idSolo) {
-        return (root, query, cb) ->
-                cb.equal(root.get("solo").get("id"), idSolo);
+        return (root, query, cb) -> {
+            query.distinct(true);
+            return cb.equal(root.join("solos").get("id"), idSolo);
+        };
     }
 
     public static Specification<CasaEntity> dataCadastroEntre(LocalDateTime inicio, LocalDateTime fim) {

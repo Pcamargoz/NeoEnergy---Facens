@@ -71,13 +71,13 @@ public class PsolarService {
         return repository.save(psolar);
     }
 
-    // verificar aqui se ta certo para atualizar somente a energia solar
+    // Atualiza SOMENTE a energia do painel: carrega o existente e copia a nova energia nele.
+    // (Antes estava ao contrário — sobrescrevia a energia nova com a antiga.)
     public PsolarEntity atualizarEnergia(PsolarEntity psolar){
-        Optional<PsolarEntity> optionalPsolarEntity = repository.findById(psolar.getId());
-        if(optionalPsolarEntity != null){
-            psolar.setEnergiaPsolar(optionalPsolarEntity.get().getEnergiaPsolar());
-        }
-        return repository.save(psolar);
+        PsolarEntity existente = repository.findById(psolar.getId())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Painel solar não encontrado."));
+        existente.setEnergiaPsolar(psolar.getEnergiaPsolar());
+        return repository.save(existente);
     }
 
     public PsolarEntity atualizarStatus(UUID id, STATUS_OBJETOS novoStatus) {
