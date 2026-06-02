@@ -24,6 +24,12 @@ public class PsolarSpec {
                 cb.equal(root.get("Status"), status);
     }
 
+    // Filtra painéis de uma casa específica (campo casa -> id).
+    public static Specification<PsolarEntity> casaIdEqual(UUID casaId) {
+        return (root, query, cb) ->
+                cb.equal(root.get("casa").get("id"), casaId);
+    }
+
     public static Specification<PsolarEntity> energiaMaiorIgual(BigDecimal valor) {
         return (root, query, cb) ->
                 cb.greaterThanOrEqualTo(root.get("energiaPsolar"), valor);

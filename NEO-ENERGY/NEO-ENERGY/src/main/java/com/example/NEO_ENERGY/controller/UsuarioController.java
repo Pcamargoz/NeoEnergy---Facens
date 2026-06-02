@@ -66,11 +66,13 @@ public class UsuarioController {
         return ResponseEntity.ok(UsuarioRespostaDTO.de(service.atualizarDeDTO(id, dto)));
     }
 
-    // Trocar role é privilégio administrativo — só ADMIN pode promover/rebaixar.
-    @PatchMapping("/{id}/role")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UsuarioRespostaDTO> atualizarRole(@PathVariable UUID id, @RequestParam RoleEnum role) {
-        return ResponseEntity.ok(UsuarioRespostaDTO.de(service.atualizarRole(id, role)));
+    // Troca de plano: o próprio usuário (autenticado) sobe pra PRO, mediante confirmação.
+    @PatchMapping("/{id}/plano")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UsuarioRespostaDTO> trocarPlano(
+            @PathVariable UUID id,
+            @RequestParam boolean confirmacao) {
+        return ResponseEntity.ok(UsuarioRespostaDTO.de(service.atualizarRole(id, confirmacao)));
     }
 
     @DeleteMapping("/{id}")

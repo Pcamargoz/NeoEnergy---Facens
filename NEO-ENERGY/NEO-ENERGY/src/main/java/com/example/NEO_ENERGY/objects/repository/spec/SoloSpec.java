@@ -23,6 +23,12 @@ public class SoloSpec {
                 cb.equal(root.get("statusSolo"), statusSolo);
     }
 
+    // Filtra solos (plantações) de uma casa específica (campo casa -> id).
+    public static Specification<SoloEntity> casaIdEqual(UUID casaId) {
+        return (root, query, cb) ->
+                cb.equal(root.get("casa").get("id"), casaId);
+    }
+
     public static Specification<SoloEntity> plantacoesMaiorIgual(BigDecimal valor) {
         return (root, query, cb) ->
                 cb.greaterThanOrEqualTo(root.get("plantacoes"), valor);

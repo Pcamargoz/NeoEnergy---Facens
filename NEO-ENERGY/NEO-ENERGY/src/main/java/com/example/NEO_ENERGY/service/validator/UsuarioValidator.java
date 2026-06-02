@@ -1,5 +1,6 @@
 package com.example.NEO_ENERGY.service.validator;
 
+import com.example.NEO_ENERGY.exception.OperacaoNaoPermitidaException;
 import com.example.NEO_ENERGY.exception.RegistroDuplicado;
 import com.example.NEO_ENERGY.objects.model.UsuarioEntity;
 import com.example.NEO_ENERGY.objects.repository.UsuarioRepository;
@@ -20,6 +21,14 @@ public class UsuarioValidator {
 
     public void validarParaAtualizar(UsuarioEntity usuario) {
         validarDuplicidade(usuario.getLogin(), usuario.getId());
+    }
+
+    // Valida a troca de plano: só checa (não altera nada). Exige que o usuário tenha confirmado.
+    // A mudança de role em si fica no service, que é quem deve alterar o estado.
+    public void validarParaTrocarPlano(boolean confirmacao) {
+        if (!confirmacao) {
+            throw new OperacaoNaoPermitidaException("É necessário confirmar a troca de plano.");
+        }
     }
 
     private void validarDuplicidade(String username, UUID idAtual) {

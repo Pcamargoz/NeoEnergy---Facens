@@ -2,9 +2,13 @@ package com.example.NEO_ENERGY.controller;
 
 import com.example.NEO_ENERGY.objects.dto.CasaDTO;
 import com.example.NEO_ENERGY.objects.dto.CasaRespostaDTO;
+import com.example.NEO_ENERGY.objects.dto.DispositivoDTO;
+import com.example.NEO_ENERGY.objects.model.TipoDispositivo;
 import com.example.NEO_ENERGY.service.CasaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -54,6 +58,18 @@ public class CasaController {
                 .map(CasaRespostaDTO::de)
                 .toList();
         return ResponseEntity.ok(casas);
+    }
+
+    // Lista paginada dos dispositivos de uma casa (irrigadores, painéis e plantações).
+    // tipo opcional: IRRIGADOR, PAINEL_SOLAR ou PLANTACAO. Sem tipo, retorna os três misturados.
+    // Paginação via query params: ?page=0&size=10&sort=nome,asc
+    @GetMapping("/{casaId}/dispositivos")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<Page<DispositivoDTO>> listarDispositivos(
+            @PathVariable UUID casaId,
+            @RequestParam(required = false) TipoDispositivo tipo,
+            Pageable pageable) {
+        return ResponseEntity.ok(service.listarDispositivos(casaId, tipo, pageable));
     }
 
     @PutMapping("/{id}")

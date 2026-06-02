@@ -34,6 +34,10 @@ public class IrrigadorEntity {
     @JoinColumn(name = "solo_id", nullable = false)
     private SoloEntity solo;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "casa_id", nullable = false)
+    private CasaEntity casaId;
+
     @CreatedDate
     @Column(name = "data_cadastro", updatable = false)
     private LocalDateTime dataCadastro;
@@ -41,6 +45,7 @@ public class IrrigadorEntity {
     @LastModifiedDate
     @Column(name = "data_atualizacao")
     private LocalDateTime dataAtualizacao;
+
 
     // Soma de quantos segundos o irrigador já ficou ligado no total (todos os ciclos).
     // O instante de quando ligou/desligou agora fica em SessaoIrrigador.

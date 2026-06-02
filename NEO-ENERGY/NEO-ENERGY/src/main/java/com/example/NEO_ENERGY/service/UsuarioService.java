@@ -77,10 +77,13 @@ public class UsuarioService {
         return repository.save(usuario);
     }
 
-    public UsuarioEntity atualizarRole(UUID id, RoleEnum novaRole) {
+    // Troca o plano do usuário para PRO. Carrega o usuário do banco (pra não sobrescrever
+    // campos com null), valida a confirmação e só então altera a role.
+    public UsuarioEntity atualizarRole(UUID id, boolean confirmacao) {
         UsuarioEntity usuario = repository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado."));
-        usuario.setRole(novaRole);
+        validator.validarParaTrocarPlano(confirmacao);
+        usuario.setRole(RoleEnum.PRO);
         return repository.save(usuario);
     }
 
@@ -107,4 +110,6 @@ public class UsuarioService {
         }
         return repository.findAll(spec);
     }
+
+
 }
