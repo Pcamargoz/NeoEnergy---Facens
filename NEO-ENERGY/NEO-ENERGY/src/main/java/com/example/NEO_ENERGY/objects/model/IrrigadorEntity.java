@@ -30,13 +30,10 @@ public class IrrigadorEntity {
     private BigDecimal agua;
 
     // Lado dono do relacionamento com SoloEntity (cada irrigador pertence a um solo).
+    // A casa do irrigador vem por aqui: irrigador -> solo -> casa (sem campo casa redundante).
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "solo_id", nullable = false)
     private SoloEntity solo;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "casa_id", nullable = false)
-    private CasaEntity casaId;
 
     @CreatedDate
     @Column(name = "data_cadastro", updatable = false)

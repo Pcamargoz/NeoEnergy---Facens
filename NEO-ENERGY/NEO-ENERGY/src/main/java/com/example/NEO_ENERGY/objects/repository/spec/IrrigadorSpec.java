@@ -24,11 +24,11 @@ public class IrrigadorSpec {
                 cb.equal(root.get("status"), status);
     }
 
-    // Filtra irrigadores de uma casa específica. O campo casaId é um ManyToOne CasaEntity,
-    // então navegamos casaId -> id.
+    // Filtra irrigadores de uma casa. O irrigador não guarda a casa direto:
+    // navega irrigador -> solo -> casa -> id.
     public static Specification<IrrigadorEntity> casaIdEqual(UUID casaId) {
         return (root, query, cb) ->
-                cb.equal(root.get("casaId").get("id"), casaId);
+                cb.equal(root.get("solo").get("casa").get("id"), casaId);
     }
 
     public static Specification<IrrigadorEntity> aguaMaiorIgual(BigDecimal valor) {
