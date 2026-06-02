@@ -30,6 +30,13 @@ public class UsuarioController {
         return ResponseEntity.created(URI.create("/usuarios/" + resposta.id())).body(resposta);
     }
 
+    // Perfil do próprio usuário logado (qualquer autenticado, não precisa ser ADMIN).
+    @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UsuarioRespostaDTO> meuPerfil() {
+        return ResponseEntity.ok(UsuarioRespostaDTO.de(authenticatedUser.usuarioAtual()));
+    }
+
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UsuarioRespostaDTO>> listar() {

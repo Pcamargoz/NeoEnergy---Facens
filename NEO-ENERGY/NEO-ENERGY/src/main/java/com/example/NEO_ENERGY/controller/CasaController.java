@@ -24,20 +24,29 @@ public class CasaController {
 
     private final CasaService service;
 
+    // Cria (ou retorna) a casa do usuário logado e vincula a ele. Não precisa de body.
     @PostMapping
-    @PreAuthorize("permitAll()")
-    public ResponseEntity<CasaRespostaDTO> criar(@RequestBody @Valid CasaDTO dto) {
-        CasaRespostaDTO resposta = CasaRespostaDTO.de(service.criarDeDTO(dto));
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<CasaRespostaDTO> criar() {
+        CasaRespostaDTO resposta = CasaRespostaDTO.de(service.criarParaUsuario());
         return ResponseEntity.created(URI.create("/casa/" + resposta.id())).body(resposta);
     }
 
+    // Lista a(s) casa(s) do usuário logado (na prática, 0 ou 1).
     @GetMapping
-    @PreAuthorize("permitAll()")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<CasaRespostaDTO>> listar() {
         List<CasaRespostaDTO> casas = service.listarTodos().stream()
                 .map(CasaRespostaDTO::de)
                 .toList();
         return ResponseEntity.ok(casas);
+    }
+
+    // Atalho: a casa do próprio usuário autenticado (404 se ainda não tem).
+    @GetMapping("/minha")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<CasaRespostaDTO> minhaCasa() {
+        return ResponseEntity.ok(CasaRespostaDTO.de(service.minhaCasa()));
     }
 
     @GetMapping("/{id}")

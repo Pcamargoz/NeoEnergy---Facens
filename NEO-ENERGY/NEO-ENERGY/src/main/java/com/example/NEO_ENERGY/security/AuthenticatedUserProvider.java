@@ -1,6 +1,8 @@
 package com.example.NEO_ENERGY.security;
 
 import com.example.NEO_ENERGY.exception.OperacaoNaoPermitidaException;
+import com.example.NEO_ENERGY.exception.RecursoNaoEncontradoException;
+import com.example.NEO_ENERGY.objects.model.CasaEntity;
 import com.example.NEO_ENERGY.objects.model.RoleEnum;
 import com.example.NEO_ENERGY.objects.model.UsuarioEntity;
 import com.example.NEO_ENERGY.objects.repository.UsuarioRepository;
@@ -63,6 +65,35 @@ public class AuthenticatedUserProvider {
         if (!atual.getId().equals(idAlvo)) {
             throw new OperacaoNaoPermitidaException(
                     "Você só pode alterar os seus próprios dados.");
+        }
+    }
+
+    /** Casa do usuário autenticado. Lança 404 se ele ainda não cadastrou uma casa. */
+    public CasaEntity casaAtual() {
+        CasaEntity casa = usuarioAtual().getCasa();
+        if (casa == null) {
+            throw new RecursoNaoEncontradoException("Usuário ainda não possui uma casa cadastrada.");
+        }
+        return casa;
+    }
+
+    /** Id da casa do usuário, ou null se ele ainda não tem casa (usado para listagens vazias). */
+    public UUID casaIdAtualOuNull() {
+        CasaEntity casa = usuarioAtual().getCasa();
+        return casa == null ? null : casa.getId();
+    }
+
+    /**
+     * Garante que a casa informada é a do usuário autenticado (ADMIN passa direto).
+     * Lança 403 caso contrário. Usado para escopar acessos por id ao dono.
+     */
+    public void exigirDonoDaCasa(UUID casaId) {
+        if (isAdmin()) {
+            return;
+        }
+        UUID minha = casaIdAtualOuNull();
+        if (minha == null || !minha.equals(casaId)) {
+            throw new OperacaoNaoPermitidaException("Esse recurso não pertence à sua casa.");
         }
     }
 }
